@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Confere Aí — Flashcards de Mitos e Verdades</title>
+    <style>
+      :root{
+        --bg:#f4f7fb;
+        --card:#ffffff;
+        --accent:#2b7a78;
+        --muted:#566;
+        --success:#2e8b57;
+        --danger:#c0392b;
+        --gap:16px;
+      }
+      *{box-sizing:border-box}
+      body{
+        margin:0;
+        min-height:100vh;
+        font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        background:linear-gradient(180deg, var(--bg), #eef4f7);
+        color:#0f1720;
+        padding:24px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+      }
+
+      /* Layout */
+      .container{width:100%;max-width:1100px}
+      header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+      .brand{display:flex;align-items:baseline;gap:12px}
+      h1{font-size:1.35rem;margin:0;color:var(--accent)}
+      nav a{color:#0f1720;text-decoration:none;padding:8px 10px;border-radius:8px;font-weight:600}
+      nav a:hover, nav a:focus{background:#fff;border:1px solid #d6dbe0;outline:none}
+
+      /* Intro */
+      .lead{margin:0 0 18px;color:var(--muted);font-size:.98rem}
+
+      /* Main content */
+      main{width:100%;background:transparent}
+      h2{font-size:1.1rem;margin:6px 0 12px}
+      .cards-grid{
+        display:grid;
+        grid-template-columns:repeat(3,1fr);
+        gap:var(--gap);
+      }
+
+      @media (max-width:980px){
+        .cards-grid{grid-template-columns:repeat(2,1fr)}
+      }
+      @media (max-width:620px){
+        .cards-grid{grid-template-columns:1fr}
+      }
+
+      /* Card (article) */
+      article.card{
+        perspective:1100px;
+        cursor:pointer;
+      }
+      .card-inner{
+        position:relative;
+        width:100%;
+        height:320px;
+        border-radius:12px;
+        transform-style:preserve-3d;
+        transition:transform .55s cubic-bezier(.2,.9,.3,1);
+        box-shadow:0 10px 25px rgba(15,23,32,0.06);
+      }
+      /* Flip on hover and focus-within (desktop) */
+      article.card:hover .card-inner,
+      article.card:focus-within .card-inner{
+        transform:rotateY(180deg);
+      }
+      /* Flipped class for touch/keyboard toggle */
+      .card-inner.flipped{transform:rotateY(180deg)}
+
+      .face{
+        position:absolute;inset:0;padding:16px;border-radius:12px;
+        backface-visibility:hidden;display:flex;flex-direction:column;gap:12px;align-items:stretch;
+        background:linear-gradient(180deg,#fff,#fbfdff);
+      }
+      .face .top{
+        display:flex;align-items:center;gap:12px;
+      }
+      .cartao-imagem{width:88px;height:88px;object-fit:cover;border-radius:8px;flex:0 0 88px}
+      .front{justify-content:flex-start}
+      .back{transform:rotateY(180deg);justify-content:flex-start}
+
+      .question{font-size:1.02rem;font-weight:700;color:#0b1220}
+      .answer{font-size:.98rem;color:#16324f}
+      .meta{
+        margin-top:auto;padding:8px 10px;border-radius:999px;font-weight:700;display:inline-block;
+        align-self:flex-start;
+      }
+      .meta.mito{background:rgba(192,57,43,0.12);color:var(--danger)}
+      .meta.verdade{background:rgba(46,139,87,0.12);color:var(--success)}
+
+      /* small helpers */
+      .controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+      .small{background:#fff;border:1px solid #d6dbe0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+      .hint{font-size:.9rem;color:var(--muted)}
+
+      /* Add form */
+      .add-form{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+      input, textarea, select{padding:10px;border-radius:8px;border:1px solid #d6dbe0;background:#fff;font:inherit}
+      textarea{min-height:64px;resize:vertical}
+      footer{margin-top:28px;color:var(--muted);font-size:.92rem;text-align:center}
+
+      /* Focus styles for accessibility */
+      article.card:focus{outline:3px solid rgba(43,122,120,0.12);outline-offset:4px;border-radius:12px}
+      .visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap;border:0;padding:0;margin:-1px}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="brand">
+          <h1>Confere Aí</h1>
+          <div class="hint visually-hidden" id="sitePurpose">Flashcards para distinguir mitos e verdades — verifique sempre as fontes.</div>
+        </div>
+        <nav aria-label="Navegação principal">
+          <a href="#" aria-current="page">Início</a>
+          <a href="#atividades">Atividades</a>
+          <a href="#sobre">Sobre</a>
+        </nav>
+      </header>
+
+      <main>
+        <p class="lead">Pense como visitante: o título, as imagens e o rótulo (Mito/Verdade) devem aparecer com clareza. Passe o mouse ou toque no cartão para ver a resposta.</p>
+
+        <h2 id="atividades">Descubra a verdade passando o mouse</h2>
+
+        <div class="controls" role="region" aria-label="Controles rápidos">
+          <button id="shuffleBtn" class="small" title="Embaralhar (tecla E)">Embaralhar (E)</button>
+          <button id="resetBtn" class="small" title="Voltar à ordem inicial">Reiniciar</button>
+          <div style="margin-left:auto" class="hint">Use Tab para navegar nos cartões; Enter/Espaço para virar.</div>
+        </div>
+
+        <section class="cards-grid" id="cardsGrid" aria-live="polite" aria-label="Lista de cartões">
+          <!-- Articles (cards) serão inseridos aqui via JavaScript -->
+        </section>
+
+        <form id="addForm" class="add-form" aria-label="Adicionar cartão">
+          <input id="qInput" placeholder="Pergunta (ex: 'Gargarejar água morna cura COVID-19?')" required style="flex:1 1 300px" />
+          <input id="aInput" placeholder="Resposta curta" required style="flex:1 1 220px" />
+          <input id="imgInput" placeholder="URL da imagem (opcional)" style="flex:1 1 220px" />
+          <select id="typeInput" aria-label="Tipo do cartão">
+            <option value="Mito">Mito</option>
+            <option value="Verdade">Verdade</option>
+          </select>
+          <button id="addBtn" class="small">Adicionar</button>
+        </form>
+      </main>
+
+      <footer id="sobre">
+        <p>Projeto feito por [Seu Nome]. Material educativo: verifique sempre fontes confiáveis antes de compartilhar.</p>
+      </footer>
+    </div>
+
+    <script>
+      // Dados iniciais
+      const initialCards = [
+        {
+          question: "Gargarejar água morna cura a COVID-19?",
+          answer: "Não — não há evidências científicas de que gargarejar água morna previna ou cure COVID-19.",
+          type: "Mito",
+          img: ""
+        },
+        {
+          question: "Vacinas aprovadas passam por testes de segurança?",
+          answer: "Sim — vacinas aprovadas passam por várias fases de testes clínicos e monitoramento contínuo.",
+          type: "Verdade",
+          img: ""
+        },
+        {
+          question: "Imagens antigas podem ser reutilizadas como 'prova' de evento atual?",
+          answer: "Sim — muitas imagens antigas ou de outros contextos são reutilizadas e enganam; faça busca reversa.",
+          type: "Verdade",
+          img: ""
+        },
+        {
+          question: "Pinguins conseguem voar como pássaros?",
+          answer: "Não — pinguins não voam; eles são excelentes nadadores adaptados ao ambiente aquático.",
+          type: "Mito",
+          img: "https://static.nationalgeographicbrasil.com/files/styles/image_3200/public/mm1012723121410486.jpg?w=1900&h=2849"
+        }
+      ];
+
+      let cards = [...initialCards]; // manter cópia mutável
+      let currentOrder = cards.map((_, i) => i);
+
+      const grid = document.getElementById('cardsGrid');
+
+      function createCardElement(c, index){
+        const art = document.createElement('article');
+        art.className = 'card';
+        art.setAttribute('tabindex','0');
+        art.setAttribute('role','article');
+        art.setAttribute('aria-label', `${c.type} — ${c.question}`);
+        art.dataset.index = index;
+
+        const inner = document.createElement('div');
+        inner.className = 'card-inner';
+
+        // Front face
+        const front = document.createElement('div');
+        front.className = 'face front';
+        const topF = document.createElement('div'); topF.className='top';
+        if(c.img){
+          const img = document.createElement('img');
+          img.className = 'cartao-imagem';
+          img.src = c.img;
+          img.alt = c.alt || c.question + " — imagem ilustrativa";
+          topF.appendChild(img);
+        }
+        const qwrap = document.createElement('div');
+        const q = document.createElement('p'); q.className='question'; q.textContent = c.question;
+        qwrap.appendChild(q);
+        topF.appendChild(qwrap);
+        front.appendChild(topF);
+        const metaF = document.createElement('div'); metaF.className='meta ' + (c.type==='Mito' ? 'mito' : 'verdade'); metaF.textContent = c.type;
+        front.appendChild(metaF);
+
+        // Back face
+        const back = document.createElement('div');
+        back.className = 'face back';
+        const topB = document.createElement('div'); topB.className='top';
+        if(c.img){
+          const img2 = document.createElement('img');
+          img2.className='cartao-imagem';
+          img2.src = c.img;
+          img2.alt = c.alt || c.question + " — imagem ilustrativa";
+          topB.appendChild(img2);
+        }
+        const awrap = document.createElement('div');
+        const a = document.createElement('p'); a.className='answer'; a.textContent = c.answer;
+        awrap.appendChild(a);
+        topB.appendChild(awrap);
+        back.appendChild(topB);
+        const metaB = document.createElement('div'); metaB.className='meta ' + (c.type==='Mito' ? 'mito' : 'verdade'); metaB.textContent = c.type;
+        back.appendChild(metaB);
+
+        inner.appendChild(front);
+        inner.appendChild(back);
+        art.appendChild(inner);
+
+        // Interaction: click/touch toggles flip (useful on mobile)
+        art.addEventListener('click', (e) => {
+          // avoid toggling when clicking on form inputs elsewhere
+          inner.classList.toggle('flipped');
+        });
+
+        // Keyboard: Enter or Space to flip
+        art.addEventListener('keydown', (e) => {
+          if(e.key === 'Enter' || e.key === ' '){
+            e.preventDefault();
+            inner.classList.toggle('flipped');
+          }
+        });
+
+        return art;
+      }
+
+      function render(){
+        grid.innerHTML = '';
+        // Show cards in currentOrder
+        currentOrder.forEach((i) => {
+          const el = createCardElement(cards[i], i);
+          grid.appendChild(el);
+        });
+      }
+
+      // Shuffle and reset
+      function shuffleArray(){
+        currentOrder = cards.map((_, i)=>i);
+        for(let i=currentOrder.length-1;i>0;i--){
+          const j = Math.floor(Math.random()*(i+1));
+          [currentOrder[i], currentOrder[j]] = [currentOrder[j], currentOrder[i]];
+        }
+        render();
+      }
+      function resetOrder(){
+        currentOrder = cards.map((_, i)=>i);
+        render();
+      }
+
+      // Add form behavior
+      document.getElementById('addBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        const q = document.getElementById('qInput').value.trim();
+        const a = document.getElementById('aInput').value.trim();
+        const img = document.getElementById('imgInput').value.trim();
+        const t = document.getElementById('typeInput').value;
+        if(!q || !a) return;
+        cards.push({question:q, answer:a, type:t, img: img});
+        resetOrder();
+        // clear
+        document.getElementById('qInput').value='';
+        document.getElementById('aInput').value='';
+        document.getElementById('imgInput').value='';
+        // focus on new card (last)
+        setTimeout(()=> {
+          const lastArticle = grid.querySelector('article.card:last-child');
+          if(lastArticle) lastArticle.scrollIntoView({behavior:'smooth', block:'center'});
+        }, 120);
+      });
+
+      // Controls
+      document.getElementById('shuffleBtn').addEventListener('click', shuffleArray);
+      document.getElementById('resetBtn').addEventListener('click', resetOrder);
+
+      // Keyboard shortcut for shuffle (E)
+      window.addEventListener('keydown', (e) => {
+        if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+        if(e.key.toLowerCase() === 'e') shuffleArray();
+      });
+
+      // Inicializa
+      resetOrder();
+    </script>
+  </body>
+</html>
